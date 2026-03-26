@@ -25,23 +25,3 @@ export default async function handler(req, res) {
   res.status(upstream.status).json(data);
 }
 ```
-
-4. Scroll down, click **Commit new file** (green button)
-
----
-
-**Step 4 — Deploy to Vercel**
-1. Go to vercel.com → Sign up / log in with your GitHub account (this links them automatically)
-2. Click **Add New Project**
-3. You'll see your GitHub repos listed — click **Import** next to `fba-proxy`
-4. Leave every setting at the default — don't change anything
-5. Click **Deploy**
-
-It takes about 30 seconds. Vercel gives you a URL like `https://fba-proxy-ian.vercel.app`.
-
----
-
-**Step 5 — Copy your URL into the FBA Agent**
-Take that Vercel URL and paste it into the FBA Agent's **API Setup** tab under "Proxy URL" — formatted as:
-```
-https://fba-proxy-ian.vercel.app/api/js
