@@ -24,4 +24,3 @@ export default async function handler(req, res) {
   const data = await upstream.json();
   res.status(upstream.status).json(data);
 }
-```
