@@ -6,8 +6,23 @@ export default async function handler(req, res) {
 
   try {
     const { endpoint, ...rest } = req.query;
-    if (!endpoint) return res.status(400).json({ error: 'endpoint required' });
 
+    // Route Claude API calls
+    if (endpoint === 'claude') {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify(req.body)
+      });
+      const text = await response.text();
+      return res.status(response.status).setHeader('Content-Type', 'application/json').send(text);
+    }
+
+    // Route Jungle Scout API calls
     const jsUrl = new URL(`https://developer.junglescout.com/api/${endpoint}`);
     Object.entries(rest).forEach(([k, v]) => jsUrl.searchParams.append(k, v));
 
