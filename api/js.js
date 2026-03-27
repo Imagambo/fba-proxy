@@ -5,23 +5,13 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   try {
-    const { endpoint, marketplace = 'us', asin_value, start_date, end_date, ...rest } = req.query;
-
-    if (!endpoint) {
-      return res.status(400).json({ error: 'endpoint query param required' });
-    }
+    const { endpoint, ...rest } = req.query;
+    if (!endpoint) return res.status(400).json({ error: 'endpoint required' });
 
     const jsUrl = new URL(`https://developer.junglescout.com/api/${endpoint}`);
-    jsUrl.searchParams.set('marketplace', marketplace);
+    Object.entries(rest).forEach(([k, v]) => jsUrl.searchParams.append(k, v));
 
-    if (asin_value) jsUrl.searchParams.set('filter[asins]', asin_value);
-    if (start_date) jsUrl.searchParams.set('filter[start_date]', start_date);
-    if (end_date) jsUrl.searchParams.set('filter[end_date]', end_date);
-
-    Object.entries(rest).forEach(([k, v]) => jsUrl.searchParams.set(k, v));
-
-    const auth = req.headers['authorization'] || req.headers['x-auth'] || '';
-
+    const auth = req.headers['authorization'] || '';
     const response = await fetch(jsUrl.toString(), {
       method: req.method,
       headers: {
@@ -34,10 +24,7 @@ export default async function handler(req, res) {
     });
 
     const text = await response.text();
-    res.status(response.status)
-       .setHeader('Content-Type', 'application/json')
-       .send(text);
-
+    res.status(response.status).setHeader('Content-Type', 'application/json').send(text);
   } catch(e) {
     res.status(500).json({ error: e.message });
   }
