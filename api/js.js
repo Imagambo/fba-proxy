@@ -5,16 +5,24 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   try {
-    const { endpoint, marketplace = 'us' } = req.query;
+    const { endpoint, marketplace = 'us', asin_value, start_date, end_date, ...rest } = req.query;
 
     if (!endpoint) {
       return res.status(400).json({ error: 'endpoint query param required' });
     }
 
-    const url = `https://developer.junglescout.com/api/${endpoint}?marketplace=${marketplace}`;
+    const jsUrl = new URL(`https://developer.junglescout.com/api/${endpoint}`);
+    jsUrl.searchParams.set('marketplace', marketplace);
+
+    if (asin_value) jsUrl.searchParams.set('filter[asins]', asin_value);
+    if (start_date) jsUrl.searchParams.set('filter[start_date]', start_date);
+    if (end_date) jsUrl.searchParams.set('filter[end_date]', end_date);
+
+    Object.entries(rest).forEach(([k, v]) => jsUrl.searchParams.set(k, v));
+
     const auth = req.headers['authorization'] || req.headers['x-auth'] || '';
 
-    const response = await fetch(url, {
+    const response = await fetch(jsUrl.toString(), {
       method: req.method,
       headers: {
         'Accept': 'application/vnd.junglescout.v1+json',
