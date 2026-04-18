@@ -8,6 +8,9 @@ module.exports = async function handler(req, res) {
     const { endpoint, ...rest } = req.query;
 
     if (endpoint === 'claude') {
+      let body = req.body;
+      if (typeof body === 'string') { try { body = JSON.parse(body); } catch {} }
+
       const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
@@ -15,7 +18,7 @@ module.exports = async function handler(req, res) {
           'x-api-key': process.env.ANTHROPIC_API_KEY,
           'anthropic-version': '2023-06-01'
         },
-        body: JSON.stringify(req.body)
+        body: JSON.stringify(body)
       });
       const text = await response.text();
       return res.status(response.status)
@@ -25,7 +28,6 @@ module.exports = async function handler(req, res) {
 
     const jsUrl = new URL('https://developer.junglescout.com/api/' + endpoint);
     Object.entries(rest).forEach(([k, v]) => jsUrl.searchParams.append(k, v));
-
     const auth = req.headers['authorization'] || '';
     const response = await fetch(jsUrl.toString(), {
       method: req.method,
@@ -37,12 +39,10 @@ module.exports = async function handler(req, res) {
       },
       body: req.method !== 'GET' ? JSON.stringify(req.body) : undefined
     });
-
     const text = await response.text();
     res.status(response.status)
       .setHeader('Content-Type', 'application/json')
       .send(text);
-
   } catch(e) {
     res.status(500).json({ error: e.message });
   }
